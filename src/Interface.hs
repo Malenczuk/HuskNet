@@ -40,12 +40,13 @@ createTexts iP n = [t1,t2]
   where
     s1 = "Current Image: " ++ show (n+1) ++ " OF " ++ show (length iP) ++ " Images"
     s2 = "Label: " ++ show (label (iP !! n)) ++ " Prediction: " ++ show (predition (iP !! n))
+    c = if (label (iP !! n)) == (predition (iP !! n)) then G.color white else G.color red 
     t1 = translate (-280) 340 $ G.scale 0.25 0.25 $ G.color white $ text s1
-    t2 = translate (-280) 300 $ G.scale 0.25 0.25 $ G.color white $ text s2
+    t2 = translate (-280) 300 $ G.scale 0.25 0.25 $ c $ text s2
 
 
 handleKeys :: Event -> ([ImagePicture], Int) -> ([ImagePicture], Int)
-handleKeys (EventKey  (SpecialKey KeyLeft) Down _ _) (iPs, n) = if n == 0 then (iPs, n) else (iPs, n - 1)
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) (iPs, n) = if n == 0 then (iPs, n) else (iPs, n - 1)
 handleKeys (EventKey (SpecialKey KeyRight) Down _ _) (iPs, n) = if n == (length iPs - 1) then (iPs, n) else (iPs, n + 1)
 handleKeys _ (iPs, n) = (iPs, n)
 
@@ -57,10 +58,10 @@ render (iPs, n) = G.pictures (pixels ++ texts)
     texts = createTexts iPs n
 
 
-dummyUpdate f a = a
+dummyUpdate f (iPs, n) = if n == (length iPs - 1) then (iPs, n) else (iPs, n + 1)
 
 interface :: [([Float],(Int,Int))] -> IO ()
-interface iData = play window background 0 (iPs, 0) render handleKeys dummyUpdate
+interface iData = play window background 30 (iPs, 0) render handleKeys dummyUpdate
   where
     iPs = (\(x,(y,z)) -> Ip x z y ) <$> iData
 
