@@ -8,6 +8,7 @@ import Data.Word
 import qualified Data.List.Split as S
 import Numeric.LinearAlgebra
 
+
 data Image = Image {
       iRows :: Int
     , iColumns :: Int
@@ -16,20 +17,21 @@ data Image = Image {
 
 type LabelledImage = (Matrix Double, Int)
 
-toMatrix :: Image -> Matrix Double
-toMatrix image = (r><c) p :: Matrix Double
-  where r = iRows image
-        c = iColumns image
-        p = fromIntegral <$> iPixels image
 
-toVector :: Image -> Matrix Double
-toVector image = (rc><1) p :: Matrix Double
+-- | Create column vector of Image pixels
+toColVector :: Image
+         -> Matrix Double
+toColVector image = (rc><1) p :: Matrix Double
   where rc = iRows image * iColumns image
         p = normalisedData image
 
+
+-- | Normalise Image pixels
 normalisedData :: Image -> [Double]
 normalisedData image = normalisePixel <$> iPixels image
 
+
+-- | Normalise pixel
 normalisePixel :: Word8 -> Double
 normalisePixel p = fromIntegral p / 255.0
 
@@ -44,6 +46,8 @@ xxxx     unsigned byte   ??               label
 The labels values are 0 to 9.
 -}
 
+
+-- | Extract information from labels file
 deserialiseLabels :: Get (Word32, Word32, [Word8])
 deserialiseLabels = do
   magicNumber <- getWord32be
@@ -52,6 +56,8 @@ deserialiseLabels = do
   let labels = BL.unpack labelData
   return (magicNumber, count, labels)
 
+
+-- | Read labels from file
 readLabels :: FilePath -> IO [Int]
 readLabels filename = do
   content <- GZip.decompress <$> BL.readFile filename
@@ -71,6 +77,8 @@ xxxx     unsigned byte   ??               pixel
 Pixels are organized row-wise. Pixel values are 0 to 255. 0 means background (white), 255 means foreground (black).
 -}
 
+
+-- | Extract information from image file
 deserialiseHeader :: Get (Word32, Word32, Word32, Word32, [[Word8]])
 deserialiseHeader = do
   magicNumber <- getWord32be
@@ -82,28 +90,38 @@ deserialiseHeader = do
   let unpackedData = S.chunksOf len (BL.unpack packedData)
   return (magicNumber, imageCount, r, c, unpackedData)
 
+
+-- | Read Images form file
 readImages :: FilePath -> IO [Image]
 readImages filename = do
   content <- GZip.decompress <$> BL.readFile filename
   let (_, _, r, c, unpackedData) = runGet deserialiseHeader content
   return (Image (fromIntegral r) (fromIntegral c) <$> unpackedData)
 
+
+-- | Create column vector of label
 vectorizedLabels :: Int -> Matrix Double
 vectorizedLabels x = (10><1) p :: Matrix Double
   where p = [i | j <- [0 .. 9], let i = if j == x then 1.0 else 0.0]
 
+
+-- | Get training data
 readTrainingData :: IO [(Matrix Double, Matrix Double)]
 readTrainingData = do
   trainingLabels <- readLabels "train-labels-idx1-ubyte.gz"
   trainingImages <- readImages "train-images-idx3-ubyte.gz"
-  return (zip (map toVector trainingImages) (vectorizedLabels <$> trainingLabels))
+  return (zip (map toColVector trainingImages) (vectorizedLabels <$> trainingLabels))
 
+
+-- | Get test data
 readTestData :: IO [(Matrix Double, Int)]--IO [LabelledImage]
 readTestData = do
   testLabels <- readLabels "t10k-labels-idx1-ubyte.gz"
   testImages <- readImages "t10k-images-idx3-ubyte.gz"
-  return (zip (map toVector testImages) testLabels)
+  return (zip (map toColVector testImages) testLabels)
 
+
+-- | Get training and test data
 getData :: IO ([(Matrix Double, Matrix Double)], [(Matrix Double, Int)])
 getData = do
   trainingData <- readTrainingData

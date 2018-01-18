@@ -3,14 +3,17 @@ module Specs
     ) where
 
 
+-- |
 readMaybe :: Read a => String -> Maybe a
 readMaybe s = case reads s of
                   [(val, "")] -> Just val
                   _           -> Nothing
 
+
+-- | Get number of hidden Layers
 getLayersNumber :: IO Int
 getLayersNumber = do
-  putStr "Specify number of hiddent Layers: "
+  putStr "Specify number of hidden Layers: "
   input <- getLine
   let maybeInt = readMaybe input :: Maybe Int
   case maybeInt of
@@ -23,6 +26,7 @@ getLayersNumber = do
           Nothing -> putStrLn "Please try again."  >> getLayersNumber
 
 
+-- | Get size of each hidden Layer
 getSizes :: Int -> Int -> IO [Int]
 getSizes numLayers c = do
   putStr ("Specify size of Layer " ++ show c ++ ": ")
@@ -40,6 +44,8 @@ getSizes numLayers c = do
                 return (n : s)
           Nothing -> putStrLn "Please try again."  >> getSizes numLayers c
 
+
+-- | Get number of training iterations
 getEpochs :: IO Int
 getEpochs = do
   putStr "Specify number of Epochs: "

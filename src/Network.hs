@@ -4,6 +4,7 @@ import Numeric.LinearAlgebra
 import Specs
 import System.Random
 
+
 data Net = Net {
     numLayers :: Int
   , sizes :: [Int]
@@ -11,25 +12,28 @@ data Net = Net {
   , weights :: [Matrix Double]
   } deriving (Eq, Show)
 
+
+-- | Generate random small numbers
 smallRandoms :: Int -> [Double]
 smallRandoms seed = map (/100) (randoms (mkStdGen seed))
 
+
+-- | Create Matrix with random weigths
 randomWeightMatrix :: Int -> Int -> Int -> Matrix Double
 randomWeightMatrix numInputs numOutputs seed = (numOutputs><numInputs) weights
     where weights = take (numOutputs*numInputs) (smallRandoms seed)
 
 
+-- | Create new Network for given sizes of layers
 createNet :: [Int] -> IO Net
 createNet sizes = do
    let b = (\ x -> randomWeightMatrix 1 x 7) <$> tail sizes
-   let w
-         = (\ (x, y) -> randomWeightMatrix x y 7) <$>
-             zip (init sizes) (tail sizes)
-   let net
-         = Net{numLayers = length sizes, sizes = sizes,
-               biases = b, weights = w}
+   let w = (\ (x, y) -> randomWeightMatrix x y 7) <$> zip (init sizes) (tail sizes)
+   let net = Net{numLayers = length sizes, sizes = sizes, biases = b, weights = w}
    return net
 
+
+-- | Change Network to String for saving
 toString :: Net -> String
 toString net = nL ++ s ++ b ++ w
   where
@@ -39,13 +43,17 @@ toString net = nL ++ s ++ b ++ w
     w = foldr1 (++) (foldr ((\ a b -> a (' ' : b)) . shows) "\n" <$> (foldr1 (++) <$> (toLists <$> weights net)))
 
 
-
+-- | Save Network to file
 saveNetwork :: Net -> FilePath -> IO ()
 saveNetwork net file = writeFile file (toString net)
 
+
+-- | Change line from file to list of Doubles
 lineToListDouble :: String -> [Double]
 lineToListDouble line = (\ x -> read x :: Double) <$> words line
 
+
+-- | Load Network from file
 loadNetwork :: FilePath -> IO Net
 loadNetwork file = do
   content <- readFile file
