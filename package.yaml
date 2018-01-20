@@ -1,23 +1,24 @@
 name:                HuskNet
 version:             0.1.0.0
-github:              "githubuser/HuskNet"
+github:              "Malenczuk/HuskNet"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2018 Author name here"
+author:              "Maleńczuk Marcin"
+maintainer:          ""
+copyright:           "2018 Author Maleńczuk Marcin"
 
 extra-source-files:
 - README.md
 - ChangeLog.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
+# synopsis:            Feedforward Neural Network
 # category:            Web
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on Github at <https://github.com/githubuser/HuskNet#readme>
+
+description:         Please see the README on Github at <https://github.com/Malenczuk/HuskNet#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -30,8 +31,9 @@ dependencies:
 - array
 - MonadRandom
 - gloss
-- hspec
-- QuickCheck
+- tasty
+- tasty-hunit
+- tasty-quickcheck
 
 library:
   source-dirs: src
@@ -49,7 +51,7 @@ executables:
 
 tests:
   HuskNet-test:
-    main:                Spec.hs
+    main:                Tests.hs
     source-dirs:         test
     ghc-options:
     - -threaded
