@@ -5,7 +5,6 @@ import Mnist
 import GradientDescent
 import Interface
 import Network
-import Numeric.LinearAlgebra
 
 
 
