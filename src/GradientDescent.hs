@@ -1,7 +1,13 @@
+{-|
+Module : GradientDescent
+|-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module GradientDescent (getOutcomes, gradientDescent) where
+module GradientDescent
+  ( getOutcomes
+  , gradientDescent
+  ) where
 
 import Numeric.LinearAlgebra
 import qualified Data.List.Split as S
@@ -12,7 +18,7 @@ import GHC.Float
 import Network
 
 
--- |
+-- | Shuffle list
 shuffle :: [a] -> IO [a]
 shuffle xs = do
         ar <- newArray n xs
@@ -73,7 +79,7 @@ evaluate net testData = sum $ fmap (\(x,y) -> if x==y then 1.0 else 0.0) outcome
 
 -- | Get Neural Network predictions
 getOutcomes :: Net -- ^ Neural Network
-            -> [(Matrix Double, Int)] -- ^ List of Test Images with their corresponding label
+            -> [(Matrix Double, Int)] -- ^ List of Test Images with their corresponding labels
             -> [([Float], (Int, Int))] -- ^ Returns List of Test Images with their corresponding label and predictions
 getOutcomes net testData = zip listImages outcomes
   where
@@ -157,21 +163,21 @@ updateMiniBatch net miniBatch alpha = newNet
 gradientDescent :: Net -- ^ Neural Network to train
                 -> [(Matrix Double, Matrix Double)] -- ^ List of Training Images with column vectorized labels
                 -> Int -- ^ Number of training iterations
-                -> Int -- ^ Current iteration
                 -> Int -- ^ Size of Image batches
                 -> Double -- ^ Alpha
                 -> [(Matrix Double, Int)] -- ^ List of Test Images with Labels
                 -> IO Net
-gradientDescent net trainingData epochs epoch miniBatchSize alpha testData = do
-  let nTest = fromIntegral (length testData)
-  let evaluation = 100.0 * evaluate net testData / nTest
-  if epoch == epochs then do
-    print ("Epoch: " ++ show epoch ++ " = " ++ show evaluation ++ "% Out Of " ++ show nTest ++ " Test Images")
-    return net
-  else do
-    print ("Epoch: " ++ show epoch ++ " = " ++ show evaluation ++ "% Out Of " ++ show nTest ++ " Test Images")
-    shuffledTrainingData <- shuffle trainingData
-    let miniBatches = S.chunksOf miniBatchSize shuffledTrainingData
-    let newNet = foldl (\z x-> updateMiniBatch z x alpha) net miniBatches
-    gradientDescent newNet trainingData epochs (epoch + 1) miniBatchSize alpha testData
+gradientDescent net trainingData epochs miniBatchSize alpha testData = loop net 0
+  where
+    nTest = fromIntegral (length testData)
+    loop currentNet epoch = do
+      let evaluation = 100.0 * evaluate currentNet testData / nTest
+      let evaluationMsg = "Epoch: " ++ show epoch ++ " = " ++ show evaluation ++ "% Out Of " ++ show nTest ++ " Test Images"
+      print evaluationMsg
+      if epoch == epochs then return currentNet
+      else do
+        shuffledTrainingData <- shuffle trainingData
+        let miniBatches = S.chunksOf miniBatchSize shuffledTrainingData
+        let newNet = foldl (\z x-> updateMiniBatch z x alpha) currentNet miniBatches
+        loop newNet (epoch + 1)
 

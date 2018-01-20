@@ -1,5 +1,12 @@
-module Mnist (Image(..),readTrainingData, readTestData, getData)
-  where
+{-|
+Module : Mnist
+|-}
+module Mnist
+  ( Image(..)
+  , readTrainingData
+  , readTestData
+  , getData
+  ) where
 
 import qualified Codec.Compression.GZip as GZip
 import qualified Data.ByteString.Lazy as BL
@@ -9,13 +16,12 @@ import qualified Data.List.Split as S
 import Numeric.LinearAlgebra
 
 
+-- | data representing an image
 data Image = Image {
-      iRows :: Int
-    , iColumns :: Int
-    , iPixels :: [Word8]
+      iRows :: Int -- ^ Number of rows
+    , iColumns :: Int -- ^ Number of columns
+    , iPixels :: [Word8] -- ^ Pixels
     } deriving (Eq, Show)
-
-type LabelledImage = (Matrix Double, Int)
 
 
 -- | Create column vector of Image pixels
@@ -114,7 +120,7 @@ readTrainingData = do
 
 
 -- | Get test data
-readTestData :: IO [(Matrix Double, Int)]--IO [LabelledImage]
+readTestData :: IO [(Matrix Double, Int)]
 readTestData = do
   testLabels <- readLabels "t10k-labels-idx1-ubyte.gz"
   testImages <- readImages "t10k-images-idx3-ubyte.gz"

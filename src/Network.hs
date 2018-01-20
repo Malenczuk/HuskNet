@@ -1,15 +1,24 @@
-module Network (Net(..), createNet, saveNetwork, loadNetwork) where
+{-|
+Module : Network
+|-}
+module Network
+  ( Net(..)
+  , createNet
+  , saveNetwork
+  , loadNetwork
+  ) where
 
 import Numeric.LinearAlgebra
 import Specs
 import System.Random
 
 
+-- | data representing Network
 data Net = Net {
-    numLayers :: Int
-  , sizes :: [Int]
-  , biases :: [Matrix Double]
-  , weights :: [Matrix Double]
+    numLayers :: Int -- ^ Number of layers in Network
+  , sizes :: [Int] -- ^ Sizes of each layer
+  , biases :: [Matrix Double] -- ^ Bias Matrix's of each layer
+  , weights :: [Matrix Double] -- ^ Weight Matrix's of each layer
   } deriving (Eq, Show)
 
 
@@ -25,7 +34,8 @@ randomWeightMatrix numInputs numOutputs seed = (numOutputs><numInputs) weights
 
 
 -- | Create new Network for given sizes of layers
-createNet :: [Int] -> IO Net
+createNet :: [Int] -- ^ Sizes of each layer
+          -> IO Net
 createNet sizes = do
    let b = (\ x -> randomWeightMatrix 1 x 7) <$> tail sizes
    let w = (\ (x, y) -> randomWeightMatrix x y 7) <$> zip (init sizes) (tail sizes)
@@ -44,7 +54,9 @@ toString net = nL ++ s ++ b ++ w
 
 
 -- | Save Network to file
-saveNetwork :: Net -> FilePath -> IO ()
+saveNetwork :: Net -- ^ Network to save
+            -> FilePath -- ^ FilePath for saving
+            -> IO ()
 saveNetwork net file = writeFile file (toString net)
 
 
@@ -54,7 +66,8 @@ lineToListDouble line = (\ x -> read x :: Double) <$> words line
 
 
 -- | Load Network from file
-loadNetwork :: FilePath -> IO Net
+loadNetwork :: FilePath -- ^ FilePath to saved network
+            -> IO Net
 loadNetwork file = do
   content <- readFile file
   let contentLines = lines content

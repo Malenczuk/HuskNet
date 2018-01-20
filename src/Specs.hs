@@ -1,9 +1,14 @@
+{-|
+Module : Specs
+|-}
 module Specs
-    ( getLayersNumber, getSizes, getEpochs
+    ( getLayersNumber
+    , getSizes
+    , getEpochs
     ) where
 
 
--- |
+-- | Maybe reader
 readMaybe :: Read a => String -> Maybe a
 readMaybe s = case reads s of
                   [(val, "")] -> Just val
@@ -27,22 +32,24 @@ getLayersNumber = do
 
 
 -- | Get size of each hidden Layer
-getSizes :: Int -> Int -> IO [Int]
-getSizes numLayers c = do
-  putStr ("Specify size of Layer " ++ show c ++ ": ")
-  input <- getLine
-  let maybeInt = readMaybe input :: Maybe Int
-  case maybeInt of
+getSizes :: Int -> IO [Int]
+getSizes numLayers = loop 1
+  where
+    loop acc = do
+      putStr ("Specify size of Layer " ++ show acc ++ ": ")
+      input <- getLine
+      let maybeInt = readMaybe input :: Maybe Int
+      case maybeInt of
           Just n  ->
             if n < 1 then
-              putStrLn "Size of Layer must be at least 1" >> getSizes numLayers c
+              putStrLn "Size of Layer must be at least 1" >> loop acc
             else do
-              putStrLn ("Size of Layer " ++ show c ++ " = " ++ show n )
-              if c == numLayers then return [n]
+              putStrLn ("Size of Layer " ++ show acc ++ " = " ++ show n )
+              if acc == numLayers then return [n]
               else do
-                s <- getSizes numLayers (c + 1)
+                s <- loop (acc + 1)
                 return (n : s)
-          Nothing -> putStrLn "Please try again."  >> getSizes numLayers c
+          Nothing -> putStrLn "Please try again."  >> loop acc
 
 
 -- | Get number of training iterations
