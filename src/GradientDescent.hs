@@ -5,7 +5,11 @@ Module : GradientDescent
 {-# LANGUAGE TypeFamilies #-}
 
 module GradientDescent
-  ( getOutcomes
+  ( sigmoid
+  , sigmoidPrime
+  , matrixSigmoid
+  , matrixSigmoidPrime
+  , getOutcomes
   , gradientDescent
   ) where
 
